@@ -7,3 +7,4 @@ Dockerfile
 *.ini
 *.cfg
 *.env
+.gitignore
