@@ -1,6 +1,111 @@
 # FileManager
 Project that uses python automation and machine learning to walk an entire computer's file system and delete duplicates.
 
+
+
+===
+## File and Directory Adapeter Objects:
+
+> To create a File and Directory Adapter class object in Python, we can define a base class that encapsulates shared behaviors and properties of files and directories. Then, we can create specific classes for File and Directory that inherit from this base class and add their unique functionalities and attributes.
+
+---
+_So I will create an Adapter class that has the basic attributes and behaviors as both the file and directory objects._
+
+Here's an example of how you might define such a class:
+
+```python
+import os
+from datetime import datetime
+
+class FileSystemAdapter:
+    """Base class for file system objects."""
+
+    def __init__(self, path):
+        self.path = path
+        self.name = os.path.basename(path)
+        self.creation_time = datetime.fromtimestamp(os.path.getctime(path))
+        self.modification_time = datetime.fromtimestamp(os.path.getmtime(path))
+        self.size = os.path.getsize(path)
+
+    def is_directory(self):
+        return os.path.isdir(self.path)
+
+    def is_file(self):
+        return os.path.isfile(self.path)
+
+    def __str__(self):
+        return f"Name: {self.name}, Created: {self.creation_time}, Modified: {self.modification_time}, Size: {self.size} bytes"
+
+class File(FileSystemAdapter):
+    """Class for file objects."""
+
+    def __init__(self, path):
+        super().__init__(path)
+        if not self.is_file():
+            raise ValueError(f"{path} is not a file.")
+
+    # Add file-specific methods here
+    def _determine_file_type(self, data_storage):
+        """Store the file object in the appropriate storage object.
+        (script or system_file)"""
+        # Create the logic to check if the file is in an organized project
+        # directory or if its in a random directory as a script.
+        pass
+
+    def move_script(self, file, directory):
+        """Once file type is determined, move the script into the appropriate directory"""
+        pass
+
+    def move_system_file(self, file, directory):
+        """Once file type is determined to be standard system file
+        either do nothing or move to a directory that may be better"""
+        pass
+
+    def delete_duplicate_file(self, **files):
+        """Check file specifications to insure that the files are
+        duplicates. determine which file was modified last and
+        delete the one that wasn't modified last"""
+        pass
+
+class Directory(FileSystemAdapter):
+    """Class for directory objects."""
+
+    def __init__(self, path):
+        super().__init__(path)
+        if not self.is_directory():
+            raise ValueError(f"{path} is not a directory.")
+
+    def list_contents(self):
+        return os.listdir(self.path)
+
+    # Add directory-specific methods here
+
+# Example Usage
+try:
+    file = File('/path/to/some/file.txt')
+    print(file)
+
+    directory = Directory('/path/to/some/directory')
+    print(directory)
+    print("Contents:", directory.list_contents())
+
+except ValueError as e:
+    print(e)
+```
+In this implementation:
+
+`FileSystemAdapter` is the base class that provides common functionalities and attributes like the path, name, creation time, modification time, and size of the file system object.
+
+`File` and `Directory` are subclasses that extend `FileSystemAdapter`. They include checks to ensure the path provided is indeed a file or directory, respectively, and they can have additional methods specific to files or directories.
+
+The `File` class can be extended with more file-specific functionalities as needed.
+
+The `Directory` class includes a method list_contents to list the contents of the directory.
+
+Remember to replace `/path/to/some/file.txt` and `/path/to/some/directory` with actual paths on your system to test this code. Also, this code does not handle all possible edge cases and error conditions that might arise in a full-scale application, so you may need to add more robust error handling for production use.
+
+
+===
 ## File Sorting and Cleaning:
 
 To recursively sort through an entire computer directory system and organize .git directories and standalone scripts, you would typically write a script in a language like Python or Bash. Here's a high-level approach in Python:
@@ -51,6 +156,52 @@ move_scripts(root_directory, scripts_directory)
 > Be careful with permissions and make sure the script is run with the appropriate level of access.
 
 > Test the script on a small, controlled directory first to ensure it behaves as expected.
+
+
+===
+## Finding File Owner Information:
+
+> __To search for files on a disk that were created by you and not by the system using Python, you would typically follow these steps:__
+
+1.) __Identify User Files:__ Determine criteria to differentiate between your files and system files. This might include looking at file locations, creation dates, file types, or specific metadata.
+
+2.) __Use Python Libraries:__ Utilize libraries such as `os`, `os.path`, and `pathlib` to navigate the file system and retrieve file information.
+
+3.) __Filter Files:__ Apply the identified criteria to filter out system files.
+
+Here's an example script that searches for files in a specified directory (and its subdirectories) based on the file owner. This script assumes that files created by you have your user ID as the owner. We'll use the os and `pathlib` libraries:
+
+
+```python
+import os
+import pathlib
+from pwd import getpwuid  # Note: pwd module is Unix-specific
+
+def get_file_owner(file_path):
+    """ Get the owner of the file. """
+    try:
+        return getpwuid(os.stat(file_path).st_uid).pw_name
+    except Exception as e:
+        print(f"Error getting owner for file {file_path}: {e}")
+        return None
+
+def find_user_files(start_path, user_name):
+    """ Find files created by the specified user. """
+    user_files = []
+    for path in pathlib.Path(start_path).rglob('*'):
+        if path.is_file():
+            owner = get_file_owner(path)
+            if owner == user_name:
+                user_files.append(str(path))
+    return user_files
+
+# Replace '/your/directory' with the path you want to search
+# Replace 'your_username' with your actual username
+user_files = find_user_files('/your/directory', 'your_username')
+
+for file in user_files:
+    print(file)
+```
 
 ===
 ## Adding Additional Functionality:
